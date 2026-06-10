@@ -29,6 +29,12 @@ class ProfileDetailTests(APITestCase):
         self.assertEqual(response.data['email'], 'test@coderr.de')
         self.assertEqual(response.data['type'], 'customer')
 
+        empty_fields = ['first_name', 'last_name',
+                        'location', 'tel', 'description', 'working_hours']
+        for field in empty_fields:
+            self.assertEqual(response.data[field],
+                             "",  f"Feld {field} sollte leer sein")
+
     def test_unauthenticated_user_cannot_get_profile(self):
         """Ein nicht authentifizierter Benutzer erhält 401."""
         self.client.force_authenticate(user=None)
@@ -66,6 +72,9 @@ class ProfileDetailTests(APITestCase):
         self.assertEqual(response.data['location'], 'Berlin')
         self.assertEqual(response.data['email'], 'new@coderr.de')
 
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, 'new@coderr.de')
+
     def test_unauthenticated_user_cannot_update_profile(self):
         """Ein nicht authentifizierter Benutzer kann kein Profile aktualisieren (401)."""
         self.client.force_authenticate(user=None)
@@ -75,6 +84,20 @@ class ProfileDetailTests(APITestCase):
         response = self.client.patch(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_partial_update_preserves_empty_string_rule(self):
+        """Bei einer Teil-Aktualisierung bleiben nicht gesetzte Felder leere Strings."""
+        url = reverse('profile-detail', kwargs={'pk': self.user.id})
+        data = {'location': 'Berlin'}
+        response = self.client.patch(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['location'], 'Berlin')
+        empty_fields = ['first_name', 'last_name',
+                        'tel', 'description', 'working_hours']
+        for field in empty_fields:
+            self.assertEqual(response.data[field],
+                             "", f"Feld {field} sollte leer sein")
 
     def test_non_owner_cannot_update_profile(self):
         """Ein anderer User darf das Profile nicht aktualisieren (403)."""
@@ -100,3 +123,25 @@ class ProfileDetailTests(APITestCase):
         response = self.client.patch(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_profile_response_contains_all_expected_fields(self):
+        """Die GET-Antwort enthält alle erwarteten Felder."""
+        url = reverse('profile-detail', kwargs={'pk': self.user.id})
+
+        response = self.client.get(url)
+
+        expected_fields = {
+            'user',
+            'username',
+            'first_name',
+            'last_name',
+            'file',
+            'location',
+            'tel',
+            'description',
+            'working_hours',
+            'type',
+            'email',
+            'created_at'
+        }
+        self.assertSetEqual(set(response.data.keys()), expected_fields)
