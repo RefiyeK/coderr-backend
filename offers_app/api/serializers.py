@@ -15,8 +15,9 @@ class OfferDetailLinkSerializer(serializers.ModelSerializer):
         return f'/offerdetails/{obj.id}/'
 
 
-class OfferDetailCreateSerializer(serializers.ModelSerializer):
-    """Serialisiert OfferDetails für die Erstellung und Bearbeitung."""
+class OfferDetailSerializer(serializers.ModelSerializer):
+    """Serialisiert OfferDetails für die Erstellung, Bearbeitung und Anzeige."""
+
     class Meta:
         model = OfferDetail
         fields = [
@@ -27,7 +28,7 @@ class OfferDetailCreateSerializer(serializers.ModelSerializer):
 
 class OfferCreateSerializer(serializers.ModelSerializer):
     """Serialisiert Offers für die Erstellung und Bearbeitung."""
-    details = OfferDetailCreateSerializer(many=True)
+    details = OfferDetailSerializer(many=True)
 
     class Meta:
         model = Offer
@@ -41,14 +42,12 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         for detail_data in details_data:
             OfferDetail.objects.create(offer=offer, **detail_data)
         return offer
-    
+
     def validate_details(self, value):
         """Validiert, dass genau 3 Details übergeben werden."""
         if len(value) != 3:
-           raise serializers.ValidationError("Ein Angebot muss genau 3 Details haben.")
+            raise serializers.ValidationError("Ein Angebot muss genau 3 Details haben.")
         return value
-
-
 
 
 class OfferListSerializer(serializers.ModelSerializer):
@@ -89,10 +88,9 @@ class OfferListSerializer(serializers.ModelSerializer):
         }
 
 
+class OfferRetrieveSerializer(OfferListSerializer):
+    """Serialisiert ein einzelnes Offer für die Detail-Ansicht (ohne user_details)."""
 
-class OfferDetailSerializer(OfferListSerializer):
-    """Serialisiert Offer-Details."""
-    
     class Meta(OfferListSerializer.Meta):
         fields = [
             'id', 'user', 'title', 'image', 'description',
