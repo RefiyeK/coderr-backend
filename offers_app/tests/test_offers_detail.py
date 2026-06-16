@@ -90,3 +90,97 @@ class OfferDetailRetrieveTests(APITestCase):
             'min_price', 'min_delivery_time',
         }
         self.assertEqual(set(response.data.keys()), expected_fields)
+
+
+class OfferDetailDestroyTests(APITestCase):
+    """Tests für die Löschung eines Offers (DELETE /api/offers/{id}/)."""
+
+    def setUp(self):
+        """Erstellt zwei Business-User, einen Customer-User und ein Offer mit drei Details."""
+        self.owner = CustomUser.objects.create_user(
+            username='offer_owner',
+            email='owner@coderr.de',
+            password='testpass123',
+            type='business',
+        )
+        self.other_business = CustomUser.objects.create_user(
+            username='other_business',
+            email='other_biz@coderr.de',
+            password='testpass123',
+            type='business',
+        )
+        self.customer_user = CustomUser.objects.create_user(
+            username='customer_user',
+            email='cust@coderr.de',
+            password='testpass123',
+            type='customer',
+        )
+        self.offer = Offer.objects.create(
+            user=self.owner,
+            title='Grafikdesign-Paket',
+            description='Ein umfassendes Grafikdesign-Paket.',
+        )
+        OfferDetail.objects.create(
+            offer=self.offer,
+            title='Basic Design',
+            revisions=2,
+            delivery_time_in_days=5,
+            price=100,
+            features=['Logo Design'],
+            offer_type='basic',
+        )
+        OfferDetail.objects.create(
+            offer=self.offer,
+            title='Standard Design',
+            revisions=5,
+            delivery_time_in_days=7,
+            price=200,
+            features=['Logo Design', 'Visitenkarte'],
+            offer_type='standard',
+        )
+        OfferDetail.objects.create(
+            offer=self.offer,
+            title='Premium Design',
+            revisions=10,
+            delivery_time_in_days=10,
+            price=500,
+            features=['Logo Design', 'Visitenkarte', 'Briefpapier'],
+            offer_type='premium',
+        )
+        self.url = reverse('offer-detail', args=[self.offer.pk])
+
+    def test_owner_can_delete_offer(self):
+        """Der Eigentümer eines Offers kann es löschen (204)."""
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Offer.objects.count(), 0)
+        self.assertEqual(OfferDetail.objects.count(), 0)
+
+    def test_non_owner_business_user_cannot_delete_offer(self):
+        """Ein anderer Business-User kann ein fremdes Offer nicht löschen (403)."""
+        self.client.force_authenticate(user=self.other_business)
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Offer.objects.count(), 1)
+
+    def test_customer_user_cannot_delete_offer(self):
+        """Ein Customer-User kann ein Offer nicht löschen (403)."""
+        self.client.force_authenticate(user=self.customer_user)
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Offer.objects.count(), 1)
+
+    def test_unauthenticated_user_cannot_delete_offer(self):
+        """Ein nicht authentifizierter User kann kein Offer löschen (401)."""
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(Offer.objects.count(), 1)
+
+    def test_delete_nonexistent_offer_returns_404(self):
+        """Eine DELETE-Anfrage an ein nicht existierendes Offer gibt 404 zurück."""
+        self.client.force_authenticate(user=self.owner)
+        nonexistent_url = reverse('offer-detail', args=[9999])
+        response = self.client.delete(nonexistent_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(Offer.objects.count(), 1)
