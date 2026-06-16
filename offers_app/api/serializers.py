@@ -87,3 +87,15 @@ class OfferListSerializer(serializers.ModelSerializer):
             'last_name': obj.user.last_name,
             'username': obj.user.username,
         }
+
+
+
+class OfferDetailSerializer(OfferListSerializer):
+    """Serialisiert Offer-Details."""
+    
+    class Meta(OfferListSerializer.Meta):
+        fields = [
+            'id', 'user', 'title', 'image', 'description',
+            'created_at', 'updated_at', 'details',
+            'min_price', 'min_delivery_time',
+        ]

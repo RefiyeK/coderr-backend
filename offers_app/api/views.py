@@ -1,10 +1,12 @@
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from offers_app.models import Offer
-from .serializers import OfferListSerializer, OfferCreateSerializer
-from .filters import OfferFilter
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Min
+
+from offers_app.models import Offer
+from .serializers import OfferListSerializer, OfferCreateSerializer, OfferDetailSerializer
+from .filters import OfferFilter
 from .pagination import OfferPagination
 from .permissions import IsBusinessUserOrReadOnly
 
@@ -27,3 +29,10 @@ class OfferListView(generics.ListCreateAPIView):
         if self.request.method == 'POST':
             return OfferCreateSerializer
         return OfferListSerializer
+
+
+class OfferDetailView(generics.RetrieveAPIView):
+    """View für die Detail-Ansicht eines Offers unter /api/offers/<id>/."""
+    queryset = Offer.objects.all()
+    serializer_class = OfferDetailSerializer
+    permission_classes = [IsAuthenticated]
