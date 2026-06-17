@@ -5,7 +5,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Min
 
 from offers_app.models import Offer, OfferDetail
-from .serializers import OfferListSerializer, OfferCreateSerializer, OfferRetrieveSerializer, OfferDetailSerializer
+from .serializers import OfferListSerializer, OfferCreateSerializer, OfferRetrieveSerializer, OfferUpdateSerializer, OfferDetailSerializer
 from .filters import OfferFilter
 from .pagination import OfferPagination
 from .permissions import IsBusinessUserOrReadOnly, IsOwnerOrReadOnly
@@ -31,11 +31,17 @@ class OfferListView(generics.ListCreateAPIView):
         return OfferListSerializer
 
 
-class OfferDetailView(generics.RetrieveDestroyAPIView):
-    """View für Detail-Ansicht (GET) und Löschung (DELETE) eines Offers unter /api/offers/<id>/."""
+class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """View für Detail-Ansicht (GET), Aktualisierung (PATCH) und Löschung (DELETE) eines Offers unter /api/offers/<id>/."""
     queryset = Offer.objects.all()
     serializer_class = OfferRetrieveSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_serializer_class(self):
+        """Wählt den passenden Serializer abhängig von der HTTP-Methode."""
+        if self.request.method == 'PATCH':
+            return OfferUpdateSerializer
+        return OfferRetrieveSerializer
 
 
 class OfferDetailRetrieveView(generics.RetrieveAPIView):

@@ -46,7 +46,8 @@ class OfferCreateSerializer(serializers.ModelSerializer):
     def validate_details(self, value):
         """Validiert, dass genau 3 Details übergeben werden."""
         if len(value) != 3:
-            raise serializers.ValidationError("Ein Angebot muss genau 3 Details haben.")
+            raise serializers.ValidationError(
+                "Ein Angebot muss genau 3 Details haben.")
         return value
 
 
@@ -97,3 +98,34 @@ class OfferRetrieveSerializer(OfferListSerializer):
             'created_at', 'updated_at', 'details',
             'min_price', 'min_delivery_time',
         ]
+
+
+class OfferUpdateSerializer(OfferCreateSerializer):
+    """Serialisiert Offers für die Aktualisierung (ähnlich wie Create)."""
+
+    def validate_details(self, value):
+        """Bei PATCH dürfen 1 bis 3 Details übergeben werden, jeder offer_type nur einmal."""
+        if len(value) < 1 or len(value) > 3:
+            raise serializers.ValidationError(
+                "Es müssen zwischen 1 und 3 Details angegeben werden.")
+
+        types = [d['offer_type'] for d in value]
+        if len(types) != len(set(types)):
+            raise serializers.ValidationError(
+                "Jeder offer_type darf nur einmal vorkommen.")
+        return value
+
+    def update(self, instance, validated_data):
+        """Aktualisiert ein Offer und seine Details (Nested Update)."""
+        details_data = validated_data.pop('details', [])
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        for detail_data in details_data:
+            offer_type = detail_data.pop('offer_type')
+            detail_instance = instance.details.get(offer_type=offer_type)
+            for attr, value in detail_data.items():
+                setattr(detail_instance, attr, value)
+            detail_instance.save()
+        return instance
