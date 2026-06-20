@@ -1,10 +1,14 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.db.models import Q
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status as http_status
 
 from orders_app.models import Order
 from .serializers import OrderListSerializer, OrderCreateSerializer, OrderUpdateSerializer
 from .permissions import IsCustomerUserOrReadOnly, IsBusinessOwnerForUpdate
+from auth_app.models import CustomUser
 
 
 class OrderListView(generics.ListCreateAPIView):
@@ -35,3 +39,37 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method == 'DELETE':
             return [IsAdminUser()]
         return [IsAuthenticated(), IsBusinessOwnerForUpdate()]
+
+
+class OrderCountView(APIView):
+    """View für die Anzahl laufender Orders eines Business-Users unter /api/order-count/<business_user_id>/."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, business_user_id):
+        """Liefert die Anzahl der Orders mit Status 'in_progress' für den angegebenen Business-User."""
+        if not CustomUser.objects.filter(id=business_user_id, type='business').exists():
+            return Response(
+                {'detail': 'Business-User nicht gefunden.'},
+                status=http_status.HTTP_404_NOT_FOUND,
+            )
+        count = Order.objects.filter(
+            business_user_id=business_user_id, status='in_progress'
+        ).count()
+        return Response({'order_count': count})
+
+
+class CompletedOrderCountView(APIView):
+    """View für die Anzahl abgeschlossener Orders eines Business-Users unter /api/completed-order-count/<business_user_id>/."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, business_user_id):
+        """Liefert die Anzahl der Orders mit Status 'completed' für den angegebenen Business-User."""
+        if not CustomUser.objects.filter(id=business_user_id, type='business').exists():
+            return Response(
+                {'detail': 'Business-User nicht gefunden.'},
+                status=http_status.HTTP_404_NOT_FOUND,
+            )
+        count = Order.objects.filter(
+            business_user_id=business_user_id, status='completed'
+        ).count()
+        return Response({'completed_order_count': count})
