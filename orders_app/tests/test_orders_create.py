@@ -80,11 +80,11 @@ class OrderCreateTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Order.objects.count(), 0)
 
-    def test_create_order_with_nonexistent_offer_detail_returns_400(self):
-        """Eine Anfrage mit einer nicht existierenden offer_detail_id wird mit 400 abgelehnt."""
+    def test_create_order_with_nonexistent_offer_detail_returns_404(self):
+        """Eine Anfrage mit einer nicht existierenden offer_detail_id wird mit 404 abgelehnt."""
         self.client.force_authenticate(user=self.customer)
         response = self.client.post(self.url, {'offer_detail_id': 9999}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Order.objects.count(), 0)
 
     def test_create_order_without_offer_detail_id_returns_400(self):
