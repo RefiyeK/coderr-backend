@@ -3,7 +3,7 @@ from offers_app.models import Offer
 
 
 class OfferFilter(django_filters.FilterSet):
-    """Filter für Offers: creator_id, min_price, max_delivery_time."""
+    """Filters for offers: creator_id, min_price, max_delivery_time."""
     creator_id = django_filters.NumberFilter(field_name='user')
     min_price = django_filters.NumberFilter(
         field_name='details__price', lookup_expr='gte'

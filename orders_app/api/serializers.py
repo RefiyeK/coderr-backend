@@ -6,7 +6,7 @@ from offers_app.models import OfferDetail
 
 
 class OrderListSerializer(serializers.ModelSerializer):
-    """Serialisiert Orders für die Listen-Ansicht (GET)."""
+    """Serializes Orders for the list view (GET)."""
 
     class Meta:
         model = Order
@@ -18,7 +18,7 @@ class OrderListSerializer(serializers.ModelSerializer):
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
-    """Serialisiert Orders für die Erstellung (POST) als Snapshot von einem OfferDetail."""
+    """Serializes Orders for creation (POST) as a snapshot from an OfferDetail."""
     offer_detail_id = serializers.IntegerField(write_only=True)
 
     class Meta:
@@ -36,12 +36,13 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        """Erstellt eine neue Order als Snapshot vom OfferDetail; wirft 404 wenn nicht gefunden."""
+        """Creates a new Order as a snapshot from the OfferDetail; raises 404 if not found."""
         offer_detail_id = validated_data.pop('offer_detail_id')
         try:
             offer_detail = OfferDetail.objects.get(id=offer_detail_id)
         except OfferDetail.DoesNotExist:
-            raise NotFound(f"OfferDetail mit id {offer_detail_id} existiert nicht.")
+            raise NotFound(
+                f"OfferDetail with id {offer_detail_id} does not exist.")
         order = Order.objects.create(
             customer_user=self.context['request'].user,
             business_user=offer_detail.offer.user,
@@ -56,7 +57,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderUpdateSerializer(serializers.ModelSerializer):
-    """Serialisiert Orders für die Status-Aktualisierung (PATCH)."""
+    """Serializes Orders for status updates (PATCH)."""
 
     class Meta:
         model = Order

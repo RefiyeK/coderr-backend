@@ -3,7 +3,7 @@ from offers_app.models import Offer, OfferDetail
 
 
 class OfferDetailLinkSerializer(serializers.ModelSerializer):
-    """Kompakte Darstellung eines OfferDetails (nur ID + URL) für die Liste."""
+    """Compact representation of an OfferDetail (only ID + URL) for list views."""
     url = serializers.SerializerMethodField()
 
     class Meta:
@@ -11,12 +11,12 @@ class OfferDetailLinkSerializer(serializers.ModelSerializer):
         fields = ['id', 'url']
 
     def get_url(self, obj):
-        """Erzeugt die relative URL zum OfferDetail."""
+        """Builds the relative URL to the OfferDetail."""
         return f'/offerdetails/{obj.id}/'
 
 
 class OfferDetailSerializer(serializers.ModelSerializer):
-    """Serialisiert OfferDetails für die Erstellung, Bearbeitung und Anzeige."""
+    """Serializes OfferDetails for creation, update and display."""
 
     class Meta:
         model = OfferDetail
@@ -27,7 +27,7 @@ class OfferDetailSerializer(serializers.ModelSerializer):
 
 
 class OfferCreateSerializer(serializers.ModelSerializer):
-    """Serialisiert Offers für die Erstellung und Bearbeitung."""
+    """Serializes Offers for creation."""
     details = OfferDetailSerializer(many=True)
 
     class Meta:
@@ -35,7 +35,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'image', 'description', 'details']
 
     def create(self, validated_data):
-        """Erstellt ein Offer mit seinen Details."""
+        """Creates an Offer along with its details."""
         details_data = validated_data.pop('details')
         validated_data['user'] = self.context['request'].user
         offer = Offer.objects.create(**validated_data)
@@ -44,15 +44,15 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         return offer
 
     def validate_details(self, value):
-        """Validiert, dass genau 3 Details übergeben werden."""
+        """Validates that exactly 3 details are provided."""
         if len(value) != 3:
             raise serializers.ValidationError(
-                "Ein Angebot muss genau 3 Details haben.")
+                "An offer must have exactly 3 details.")
         return value
 
 
 class OfferListSerializer(serializers.ModelSerializer):
-    """Serialisiert Offers für die Listen-Ansicht."""
+    """Serializes Offers for the list view."""
     details = OfferDetailLinkSerializer(many=True, read_only=True)
     min_price = serializers.SerializerMethodField()
     min_delivery_time = serializers.SerializerMethodField()
@@ -67,21 +67,21 @@ class OfferListSerializer(serializers.ModelSerializer):
         ]
 
     def get_min_price(self, obj):
-        """Liefert den niedrigsten Preis aller Details."""
+        """Returns the lowest price among all details."""
         details = obj.details.all()
         if not details:
             return None
         return min(d.price for d in details)
 
     def get_min_delivery_time(self, obj):
-        """Liefert die kürzeste Lieferzeit aller Details."""
+        """Returns the shortest delivery time among all details."""
         details = obj.details.all()
         if not details:
             return None
         return min(d.delivery_time_in_days for d in details)
 
     def get_user_details(self, obj):
-        """Liefert grundlegende User-Daten als verschachteltes Objekt."""
+        """Returns basic user data as a nested object."""
         return {
             'first_name': obj.user.first_name,
             'last_name': obj.user.last_name,
@@ -90,7 +90,7 @@ class OfferListSerializer(serializers.ModelSerializer):
 
 
 class OfferRetrieveSerializer(OfferListSerializer):
-    """Serialisiert ein einzelnes Offer für die Detail-Ansicht (ohne user_details)."""
+    """Serializes a single Offer for the detail view (excludes user_details)."""
 
     class Meta(OfferListSerializer.Meta):
         fields = [
@@ -101,22 +101,22 @@ class OfferRetrieveSerializer(OfferListSerializer):
 
 
 class OfferUpdateSerializer(OfferCreateSerializer):
-    """Serialisiert Offers für die Aktualisierung (ähnlich wie Create)."""
+    """Serializes Offers for updates (PATCH); allows 1-3 details with unique offer_types."""
 
     def validate_details(self, value):
-        """Bei PATCH dürfen 1 bis 3 Details übergeben werden, jeder offer_type nur einmal."""
+        """For PATCH, allows 1 to 3 details, with each offer_type appearing only once."""
         if len(value) < 1 or len(value) > 3:
             raise serializers.ValidationError(
-                "Es müssen zwischen 1 und 3 Details angegeben werden.")
+                "Between 1 and 3 details must be provided.")
 
         types = [d['offer_type'] for d in value]
         if len(types) != len(set(types)):
             raise serializers.ValidationError(
-                "Jeder offer_type darf nur einmal vorkommen.")
+                "Each offer_type may appear only once.")
         return value
 
     def update(self, instance, validated_data):
-        """Aktualisiert ein Offer und seine Details (Nested Update)."""
+        """Updates an Offer and its details (nested update)."""
         details_data = validated_data.pop('details', [])
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

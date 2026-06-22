@@ -3,7 +3,7 @@ from reviews_app.models import Review
 
 
 class ReviewFilter(django_filters.FilterSet):
-    """Filter für Reviews nach business_user_id und reviewer_id."""
+    """Filters for reviews by business_user_id and reviewer_id."""
     business_user_id = django_filters.NumberFilter(field_name='business_user')
     reviewer_id = django_filters.NumberFilter(field_name='reviewer')
 

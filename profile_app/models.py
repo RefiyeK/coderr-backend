@@ -3,7 +3,7 @@ from django.db import models
 
 
 class Profile(models.Model):
-    """Profil eines Benutzers mit zusätzlichen Daten zur User-Tabelle."""
+    """User profile with additional data extending the user table."""
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 

@@ -12,44 +12,44 @@ from auth_app.models import CustomUser
 
 
 class OrderListView(generics.ListCreateAPIView):
-    """View für die Order-Liste (GET) und Order-Erstellung (POST) unter /api/orders/."""
+    """View for the orders list (GET) and order creation (POST) at /api/orders/."""
     permission_classes = [IsCustomerUserOrReadOnly]
 
     def get_queryset(self):
-        """Liefert nur Orders zurück, an denen der eingeloggte User beteiligt ist."""
+        """Returns only orders in which the logged-in user is involved."""
         return Order.objects.filter(
             Q(customer_user=self.request.user) | Q(
                 business_user=self.request.user)
         )
 
     def get_serializer_class(self):
-        """Wählt den passenden Serializer abhängig von der HTTP-Methode."""
+        """Selects the appropriate serializer based on the HTTP method."""
         if self.request.method == 'POST':
             return OrderCreateSerializer
         return OrderListSerializer
 
 
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """View für PATCH und DELETE einer Order unter /api/orders/<id>/."""
+    """View for PATCH and DELETE of an Order at /api/orders/<id>/."""
     queryset = Order.objects.all()
     serializer_class = OrderUpdateSerializer
 
     def get_permissions(self):
-        """Wählt Permissions abhängig von der HTTP-Methode."""
+        """Selects permissions based on the HTTP method."""
         if self.request.method == 'DELETE':
             return [IsAdminUser()]
         return [IsAuthenticated(), IsBusinessOwnerForUpdate()]
 
 
 class OrderCountView(APIView):
-    """View für die Anzahl laufender Orders eines Business-Users unter /api/order-count/<business_user_id>/."""
+    """View for the number of in-progress orders of a business user at /api/order-count/<business_user_id>/."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, business_user_id):
-        """Liefert die Anzahl der Orders mit Status 'in_progress' für den angegebenen Business-User."""
+        """Returns the number of orders with status 'in_progress' for the given business user."""
         if not CustomUser.objects.filter(id=business_user_id, type='business').exists():
             return Response(
-                {'detail': 'Business-User nicht gefunden.'},
+                {'detail': 'Business user not found.'},
                 status=http_status.HTTP_404_NOT_FOUND,
             )
         count = Order.objects.filter(
@@ -59,14 +59,14 @@ class OrderCountView(APIView):
 
 
 class CompletedOrderCountView(APIView):
-    """View für die Anzahl abgeschlossener Orders eines Business-Users unter /api/completed-order-count/<business_user_id>/."""
+    """View for the number of completed orders of a business user at /api/completed-order-count/<business_user_id>/."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, business_user_id):
-        """Liefert die Anzahl der Orders mit Status 'completed' für den angegebenen Business-User."""
+        """Returns the number of orders with status 'completed' for the given business user."""
         if not CustomUser.objects.filter(id=business_user_id, type='business').exists():
             return Response(
-                {'detail': 'Business-User nicht gefunden.'},
+                {'detail': 'Business user not found.'},
                 status=http_status.HTTP_404_NOT_FOUND,
             )
         count = Order.objects.filter(

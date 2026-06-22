@@ -3,6 +3,7 @@ from django.conf import settings
 
 
 class Order(models.Model):
+    """Order created by a customer based on an OfferDetail (snapshot pattern)."""
 
     OFFER_TYPE_CHOICES = [
         ('basic', 'Basic'),

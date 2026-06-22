@@ -10,7 +10,7 @@ from .permissions import IsCustomerUserOrReadOnly, IsReviewerOrReadOnly
 
 
 class ReviewListView(generics.ListCreateAPIView):
-    """View für die Review-Liste (GET) und Erstellung (POST) unter /api/reviews/."""
+    """View for the reviews list (GET) and review creation (POST) at /api/reviews/."""
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [IsCustomerUserOrReadOnly]
@@ -19,12 +19,12 @@ class ReviewListView(generics.ListCreateAPIView):
     ordering_fields = ['updated_at', 'rating']
 
     def perform_create(self, serializer):
-        """Setzt automatisch den eingeloggten User als reviewer."""
+        """Automatically sets the logged-in user as the reviewer."""
         serializer.save(reviewer=self.request.user)
 
+
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """View für PATCH und DELETE einer Review unter /api/reviews/<id>/."""
+    """View for PATCH and DELETE of a Review at /api/reviews/<id>/."""
     queryset = Review.objects.all()
     serializer_class = ReviewUpdateSerializer
     permission_classes = [IsAuthenticated, IsReviewerOrReadOnly]
-

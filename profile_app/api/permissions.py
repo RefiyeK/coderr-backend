@@ -3,8 +3,8 @@ from rest_framework import permissions
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """
-    Erlaubt nur dem Eigentümer eines Profile, es zu bearbeiten.
-    Lesezugriff ist für alle authentifizierten Benutzer erlaubt.
+    Allows only the profile owner to edit it.
+    Read access is granted to all authenticated users.
     """
 
     def has_object_permission(self, request, view, obj):

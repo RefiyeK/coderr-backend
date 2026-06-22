@@ -3,7 +3,7 @@ from django.db import models
 
 
 class Offer(models.Model):
-    """Dienstleistungsangebot, das von einem Business-User erstellt wird."""
+    """Service offer created by a business user."""
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -17,14 +17,13 @@ class Offer(models.Model):
 
     class Meta:
         ordering = ['-updated_at']
-        
+
     def __str__(self):
         return self.title
 
 
-
 class OfferDetail(models.Model):
-    """Eine Paket-Variante eines Offers (basic/standard/premium)."""
+    """A package variant of an Offer (basic/standard/premium)."""
     OFFER_TYPE_CHOICES = [
         ('basic', 'Basic'),
         ('standard', 'Standard'),

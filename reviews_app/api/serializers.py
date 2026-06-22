@@ -5,7 +5,7 @@ from reviews_app.models import Review
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    """Serialisiert Review-Objekte."""
+    """Serializes Review objects."""
 
     class Meta:
         model = Review
@@ -16,7 +16,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ['reviewer']
 
     def validate(self, attrs):
-        """Verhindert, dass derselbe Reviewer mehrere Reviews für denselben Business-User erstellt (403)."""
+        """Prevents the same reviewer from creating multiple reviews for the same business user (returns 403)."""
         request = self.context.get('request')
         if request and request.method == 'POST':
             business_user = attrs.get('business_user')
@@ -25,13 +25,13 @@ class ReviewSerializer(serializers.ModelSerializer):
                 reviewer=request.user,
             ).exists():
                 raise PermissionDenied(
-                    "Du hast diesem Business-User bereits eine Bewertung gegeben."
+                    "You have already submitted a review for this business user."
                 )
         return attrs
 
 
 class ReviewUpdateSerializer(serializers.ModelSerializer):
-    """Serialisiert Reviews für die Aktualisierung (PATCH) - nur rating und description."""
+    """Serializes Reviews for updates (PATCH); only rating and description are editable."""
 
     class Meta:
         model = Review

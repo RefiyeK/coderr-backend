@@ -4,7 +4,7 @@ from django.db import models
 
 
 class Review(models.Model):
-    """Bewertung eines Business-Users durch einen Customer."""
+    """Review of a business user written by a customer."""
     business_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

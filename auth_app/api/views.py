@@ -7,14 +7,13 @@ from rest_framework.permissions import AllowAny
 from .serializers import RegisterSerializer
 
 
-
 class RegistrationView(APIView):
-    """API-View für die Benutzerregistrierung."""
+    """API view for user registration."""
 
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Behandelt POST-Anfragen zur Registrierung von Benutzern."""
+        """Handles POST requests for user registration."""
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -29,11 +28,11 @@ class RegistrationView(APIView):
 
 
 class LoginView(ObtainAuthToken):
-    """API-View für die Benutzeranmeldung, die ein Token zurückgibt."""
+    """API view for user login that returns a token."""
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        """Behandelt POST-Anfragen zur Anmeldung von Benutzern."""
+        """Handles POST requests for user login."""
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
         serializer.is_valid(raise_exception=True)

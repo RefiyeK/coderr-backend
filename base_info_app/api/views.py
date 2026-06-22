@@ -9,11 +9,11 @@ from reviews_app.models import Review
 
 
 class BaseInfoView(APIView):
-    """View für allgemeine Plattform-Statistiken unter /api/base-info/."""
+    """View for general platform statistics at /api/base-info/."""
     permission_classes = [AllowAny]
 
     def get(self, request):
-        """Liefert Anzahl Reviews, durchschnittliches Rating, Business-Profile und Offers."""
+        """Returns review count, average rating, business profile count and offer count."""
         average = Review.objects.aggregate(avg=Avg('rating'))['avg']
         return Response({
             'review_count': Review.objects.count(),

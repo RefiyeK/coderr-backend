@@ -5,14 +5,17 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Min
 
 from offers_app.models import Offer, OfferDetail
-from .serializers import OfferListSerializer, OfferCreateSerializer, OfferRetrieveSerializer, OfferUpdateSerializer, OfferDetailSerializer
+from .serializers import (
+    OfferListSerializer, OfferCreateSerializer, OfferRetrieveSerializer,
+    OfferUpdateSerializer, OfferDetailSerializer,
+)
 from .filters import OfferFilter
 from .pagination import OfferPagination
 from .permissions import IsBusinessUserOrReadOnly, IsOwnerOrReadOnly
 
 
 class OfferListView(generics.ListCreateAPIView):
-    """View für die Offer-Liste (GET) und Offer-Erstellung (POST) unter /api/offers/."""
+    """View for the offers list (GET) and offer creation (POST) at /api/offers/."""
     queryset = Offer.objects.all().annotate(
         min_price=Min('details__price')
     ).order_by('-updated_at').distinct()
@@ -25,27 +28,27 @@ class OfferListView(generics.ListCreateAPIView):
     pagination_class = OfferPagination
 
     def get_serializer_class(self):
-        """Wählt den passenden Serializer abhängig von der HTTP-Methode."""
+        """Selects the appropriate serializer based on the HTTP method."""
         if self.request.method == 'POST':
             return OfferCreateSerializer
         return OfferListSerializer
 
 
 class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """View für Detail-Ansicht (GET), Aktualisierung (PATCH) und Löschung (DELETE) eines Offers unter /api/offers/<id>/."""
+    """View for detail (GET), update (PATCH) and deletion (DELETE) of an Offer at /api/offers/<id>/."""
     queryset = Offer.objects.all()
     serializer_class = OfferRetrieveSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_serializer_class(self):
-        """Wählt den passenden Serializer abhängig von der HTTP-Methode."""
+        """Selects the appropriate serializer based on the HTTP method."""
         if self.request.method == 'PATCH':
             return OfferUpdateSerializer
         return OfferRetrieveSerializer
 
 
 class OfferDetailRetrieveView(generics.RetrieveAPIView):
-    """View für die Detail-Ansicht eines OfferDetails unter /api/offerdetails/<id>/."""
+    """View for the detail of an OfferDetail at /api/offerdetails/<id>/."""
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailSerializer
     permission_classes = [IsAuthenticated]

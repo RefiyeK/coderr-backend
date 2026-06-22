@@ -4,7 +4,7 @@ from profile_app.models import Profile
 
 
 class ProfileDetailSerializer(serializers.ModelSerializer):
-    """Serializer für den Profile-Detail Endpoint (GET/PATCH)."""
+    """Serializer for the Profile detail endpoint (GET/PATCH)."""
 
     username = serializers.CharField(source='user.username', read_only=True)
     first_name = serializers.CharField(source='user.first_name')
@@ -30,7 +30,7 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        """Aktualisiert sowohl User-Felder als auch Profile-Felder."""
+        """Updates both user fields and profile fields."""
         user_data = validated_data.pop('user', {})
 
         if user_data:
@@ -42,7 +42,7 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
 
 
 class BusinessProfileListSerializer(serializers.ModelSerializer):
-    """Serialisiert Business-Profile für die Listen-Ansicht."""
+    """Serializes business profiles for the list view."""
     username = serializers.CharField(source='user.username', read_only=True)
     first_name = serializers.CharField(source='user.first_name', read_only=True)
     last_name = serializers.CharField(source='user.last_name', read_only=True)
@@ -58,7 +58,7 @@ class BusinessProfileListSerializer(serializers.ModelSerializer):
 
 
 class CustomerProfileListSerializer(serializers.ModelSerializer):
-    """Serialisiert Customer-Profile für die Listen-Ansicht."""
+    """Serializes customer profiles for the list view."""
     username = serializers.CharField(source='user.username', read_only=True)
     first_name = serializers.CharField(source='user.first_name', read_only=True)
     last_name = serializers.CharField(source='user.last_name', read_only=True)
@@ -71,6 +71,3 @@ class CustomerProfileListSerializer(serializers.ModelSerializer):
             'user', 'username', 'first_name', 'last_name',
             'file', 'uploaded_at', 'type',
         ]
-
-
-        
