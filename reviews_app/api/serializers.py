@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
+
 from reviews_app.models import Review
 
 
@@ -14,7 +16,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ['reviewer']
 
     def validate(self, attrs):
-        """Verhindert, dass derselbe Reviewer mehrere Reviews für denselben Business-User erstellt."""
+        """Verhindert, dass derselbe Reviewer mehrere Reviews für denselben Business-User erstellt (403)."""
         request = self.context.get('request')
         if request and request.method == 'POST':
             business_user = attrs.get('business_user')
@@ -22,11 +24,12 @@ class ReviewSerializer(serializers.ModelSerializer):
                 business_user=business_user,
                 reviewer=request.user,
             ).exists():
-                raise serializers.ValidationError(
+                raise PermissionDenied(
                     "Du hast diesem Business-User bereits eine Bewertung gegeben."
                 )
         return attrs
-    
+
+
 class ReviewUpdateSerializer(serializers.ModelSerializer):
     """Serialisiert Reviews für die Aktualisierung (PATCH) - nur rating und description."""
 

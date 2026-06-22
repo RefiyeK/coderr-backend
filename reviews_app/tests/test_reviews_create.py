@@ -49,7 +49,7 @@ class ReviewCreateTests(APITestCase):
         self.assertEqual(Review.objects.count(), 0)
 
     def test_customer_cannot_create_second_review_for_same_business(self):
-        """Ein Customer kann pro Business-User nur eine Review erstellen (400)."""
+        """Ein Customer kann pro Business-User nur eine Review erstellen (403)."""
         self.client.force_authenticate(user=self.customer)
         payload = {
             'business_user': self.business.pk,
@@ -60,7 +60,7 @@ class ReviewCreateTests(APITestCase):
         self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
         payload['description'] = 'Zweite Bewertung'
         second_response = self.client.post(self.url, payload, format='json')
-        self.assertEqual(second_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(second_response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Review.objects.count(), 1)
 
     def test_unauthenticated_user_cannot_create_review(self):
