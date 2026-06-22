@@ -81,10 +81,3 @@ class CustomerProfileListTests(APITestCase):
         url = reverse('customer-profile-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    # def test_get_business_profiles(self):
-    #     """Testet, ob der Endpoint eine Liste von Business-Profilen zurückgibt."""
-    #     url = reverse('business-profile-list')
-    #     response = self.client.get(url)
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.assertIsInstance(response.data, list)
