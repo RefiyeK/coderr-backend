@@ -7,10 +7,10 @@ from reviews_app.models import Review
 
 
 class ReviewCreateTests(APITestCase):
-    """Tests für die Review-Erstellung (POST /api/reviews/)."""
+    """Tests for the review create endpoint (POST /api/reviews/)."""
 
     def setUp(self):
-        """Erstellt Customer und Business."""
+        """Creates a customer and a business user."""
         self.customer = CustomUser.objects.create_user(
             username='customer_user', email='c@coderr.de',
             password='testpass123', type='customer',
@@ -22,7 +22,7 @@ class ReviewCreateTests(APITestCase):
         self.url = reverse('review-list')
 
     def test_customer_can_create_review(self):
-        """Ein Customer kann eine Review für einen Business-User erstellen (201)."""
+        """A customer can create a review for a business user (201)."""
         self.client.force_authenticate(user=self.customer)
         payload = {
             'business_user': self.business.pk,
@@ -37,7 +37,7 @@ class ReviewCreateTests(APITestCase):
         self.assertEqual(response.data['rating'], 4)
 
     def test_business_user_cannot_create_review(self):
-        """Ein Business-User kann keine Review erstellen (403)."""
+        """A business user cannot create a review (403)."""
         self.client.force_authenticate(user=self.business)
         payload = {
             'business_user': self.business.pk,
@@ -49,7 +49,7 @@ class ReviewCreateTests(APITestCase):
         self.assertEqual(Review.objects.count(), 0)
 
     def test_customer_cannot_create_second_review_for_same_business(self):
-        """Ein Customer kann pro Business-User nur eine Review erstellen (403)."""
+        """A customer can only create one review per business user (403)."""
         self.client.force_authenticate(user=self.customer)
         payload = {
             'business_user': self.business.pk,
@@ -64,7 +64,7 @@ class ReviewCreateTests(APITestCase):
         self.assertEqual(Review.objects.count(), 1)
 
     def test_unauthenticated_user_cannot_create_review(self):
-        """Ein nicht authentifizierter User kann keine Review erstellen (401)."""
+        """An unauthenticated user cannot create a review (401)."""
         payload = {
             'business_user': self.business.pk,
             'rating': 4,
@@ -75,7 +75,7 @@ class ReviewCreateTests(APITestCase):
         self.assertEqual(Review.objects.count(), 0)
 
     def test_create_review_with_invalid_rating_returns_400(self):
-        """Eine Review mit einem rating außerhalb 1-5 wird abgelehnt (400)."""
+        """A review with a rating outside 1-5 is rejected (400)."""
         self.client.force_authenticate(user=self.customer)
         payload = {
             'business_user': self.business.pk,
@@ -86,7 +86,7 @@ class ReviewCreateTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_reviewer_field_is_ignored_in_request_body(self):
-        """Der reviewer im Request-Body wird ignoriert; reviewer ist immer der eingeloggte User."""
+        """The reviewer field in the request body is ignored; the reviewer is always the logged-in user."""
         other_customer = CustomUser.objects.create_user(
             username='other_customer', email='oc@coderr.de',
             password='testpass123', type='customer',

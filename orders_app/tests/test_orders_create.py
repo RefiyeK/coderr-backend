@@ -8,10 +8,10 @@ from orders_app.models import Order
 
 
 class OrderCreateTests(APITestCase):
-    """Tests für die Order-Erstellung (POST /api/orders/)."""
+    """Tests for the order create endpoint (POST /api/orders/)."""
 
     def setUp(self):
-        """Erstellt Customer, Business und ein Offer mit drei Details."""
+        """Creates a customer, a business user, and an offer with three details."""
         self.customer = CustomUser.objects.create_user(
             username='customer_user', email='c@coderr.de',
             password='testpass123', type='customer',
@@ -46,14 +46,14 @@ class OrderCreateTests(APITestCase):
         self.url = reverse('order-list')
 
     def test_customer_can_create_order_from_offer_detail(self):
-        """Ein Customer kann eine Order aus einem OfferDetail erstellen (201)."""
+        """A customer can create an order from an offer detail (201)."""
         self.client.force_authenticate(user=self.customer)
         response = self.client.post(self.url, {'offer_detail_id': self.basic_detail.pk}, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Order.objects.count(), 1)
 
     def test_created_order_is_snapshot_of_offer_detail(self):
-        """Die erstellte Order kopiert alle relevanten Felder vom OfferDetail (Snapshot)."""
+        """The created order copies all relevant fields from the offer detail (snapshot)."""
         self.client.force_authenticate(user=self.customer)
         self.client.post(self.url, {'offer_detail_id': self.basic_detail.pk}, format='json')
         order = Order.objects.first()
@@ -68,27 +68,27 @@ class OrderCreateTests(APITestCase):
         self.assertEqual(order.status, 'in_progress')
 
     def test_business_user_cannot_create_order(self):
-        """Ein Business-User kann keine Order erstellen (403)."""
+        """A business user cannot create an order (403)."""
         self.client.force_authenticate(user=self.business)
         response = self.client.post(self.url, {'offer_detail_id': self.basic_detail.pk}, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Order.objects.count(), 0)
 
     def test_unauthenticated_user_cannot_create_order(self):
-        """Ein nicht authentifizierter User kann keine Order erstellen (401)."""
+        """An unauthenticated user cannot create an order (401)."""
         response = self.client.post(self.url, {'offer_detail_id': self.basic_detail.pk}, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Order.objects.count(), 0)
 
     def test_create_order_with_nonexistent_offer_detail_returns_404(self):
-        """Eine Anfrage mit einer nicht existierenden offer_detail_id wird mit 404 abgelehnt."""
+        """A request with a nonexistent offer_detail_id is rejected with 404."""
         self.client.force_authenticate(user=self.customer)
         response = self.client.post(self.url, {'offer_detail_id': 9999}, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Order.objects.count(), 0)
 
     def test_create_order_without_offer_detail_id_returns_400(self):
-        """Eine Anfrage ohne offer_detail_id wird mit 400 abgelehnt."""
+        """A request without offer_detail_id is rejected with 400."""
         self.client.force_authenticate(user=self.customer)
         response = self.client.post(self.url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

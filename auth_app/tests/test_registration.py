@@ -4,10 +4,10 @@ from rest_framework.test import APITestCase
 
 
 class RegistrationTests(APITestCase):
-    """Tests für die Registrierung von Benutzern."""
+    """Tests for the user registration endpoint."""
 
     def test_register_valid_customer_returns_201(self):
-        """Eine valide Customer-Registrierung gibt 201 und Token zurück."""
+        """A valid customer registration returns 201 and a token."""
         url = reverse('registration')
         data = {
             'username': 'newcustomer',
@@ -16,16 +16,13 @@ class RegistrationTests(APITestCase):
             'repeated_password': 'testpass123',
             'type': 'customer',
         }
-
         response = self.client.post(url, data, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('token', response.data)
         self.assertEqual(response.data['username'], 'newcustomer')
 
-
     def test_register_with_password_mismatch_returns_400(self):
-        """Wenn die Passwörter nicht übereinstimmen, wird 400 zurückgegeben."""
+        """If the passwords do not match, 400 is returned."""
         url = reverse('registration')
         data = {
             'username': 'newcustomer',
@@ -35,13 +32,11 @@ class RegistrationTests(APITestCase):
             'type': 'customer',
         }
         response = self.client.post(url, data, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('password', response.data)
-    
 
     def test_register_with_duplicate_username_returns_400(self):
-        """Wenn der Benutzername bereits existiert, wird 400 zurückgegeben."""
+        """If the username already exists, 400 is returned."""
         url = reverse('registration')
         data = {
             'username': 'testcustomer',
@@ -51,16 +46,13 @@ class RegistrationTests(APITestCase):
             'type': 'customer',
         }
         response = self.client.post(url, data, format='json')
-
-        data['email'] = 'anderer@coderr.de' 
+        data['email'] = 'another@coderr.de'
         response = self.client.post(url, data, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('username', response.data)
 
-
     def test_register_with_invalid_type_returns_400(self):
-        """Wenn der Typ ungültig ist, wird 400 zurückgegeben."""
+        """If the type is invalid, 400 is returned."""
         url = reverse('registration')
         data = {
             'username': 'someuser',
@@ -69,11 +61,6 @@ class RegistrationTests(APITestCase):
             'repeated_password': 'testpass123',
             'type': 'admin',
         }
-    
         response = self.client.post(url, data, format='json')
-    
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('type', response.data)
-
-
-    

@@ -7,10 +7,10 @@ from orders_app.models import Order
 
 
 class OrderUpdateTests(APITestCase):
-    """Tests für die Status-Aktualisierung einer Order (PATCH /api/orders/<id>/)."""
+    """Tests for the status update of an order (PATCH /api/orders/<id>/)."""
 
     def setUp(self):
-        """Erstellt Customer, zwei Business-User und eine Order."""
+        """Creates a customer, two business users, and an order."""
         self.customer = CustomUser.objects.create_user(
             username='customer_user', email='c@coderr.de',
             password='testpass123', type='customer',
@@ -33,7 +33,7 @@ class OrderUpdateTests(APITestCase):
         self.url = reverse('order-detail', args=[self.order.pk])
 
     def test_business_owner_can_update_status(self):
-        """Der business_user der Order kann den Status aktualisieren (200)."""
+        """The business_user of the order can update the status (200)."""
         self.client.force_authenticate(user=self.business)
         response = self.client.patch(self.url, {'status': 'completed'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -41,7 +41,7 @@ class OrderUpdateTests(APITestCase):
         self.assertEqual(self.order.status, 'completed')
 
     def test_customer_cannot_update_status(self):
-        """Der customer_user kann den Status nicht aktualisieren (403)."""
+        """The customer_user cannot update the status (403)."""
         self.client.force_authenticate(user=self.customer)
         response = self.client.patch(self.url, {'status': 'completed'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -49,24 +49,24 @@ class OrderUpdateTests(APITestCase):
         self.assertEqual(self.order.status, 'in_progress')
 
     def test_other_business_user_cannot_update_status(self):
-        """Ein fremder Business-User kann den Status nicht aktualisieren (403)."""
+        """Another business user cannot update the status (403)."""
         self.client.force_authenticate(user=self.other_business)
         response = self.client.patch(self.url, {'status': 'completed'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_unauthenticated_user_cannot_update_status(self):
-        """Ein nicht authentifizierter User kann den Status nicht aktualisieren (401)."""
+        """An unauthenticated user cannot update the status (401)."""
         response = self.client.patch(self.url, {'status': 'completed'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_invalid_status_value_returns_400(self):
-        """Ein ungültiger Status-Wert wird mit 400 abgelehnt."""
+        """An invalid status value is rejected with 400."""
         self.client.force_authenticate(user=self.business)
         response = self.client.patch(self.url, {'status': 'invalid_status'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_nonexistent_order_returns_404(self):
-        """Eine PATCH-Anfrage an eine nicht existierende Order gibt 404 zurück."""
+        """A PATCH request for a nonexistent order returns 404."""
         self.client.force_authenticate(user=self.business)
         nonexistent_url = reverse('order-detail', args=[9999])
         response = self.client.patch(nonexistent_url, {'status': 'completed'}, format='json')
@@ -74,10 +74,10 @@ class OrderUpdateTests(APITestCase):
 
 
 class OrderDestroyTests(APITestCase):
-    """Tests für das Löschen einer Order (DELETE /api/orders/<id>/)."""
+    """Tests for deleting an order (DELETE /api/orders/<id>/)."""
 
     def setUp(self):
-        """Erstellt Customer, Business, Staff und eine Order."""
+        """Creates a customer, a business user, a staff user, and an order."""
         self.customer = CustomUser.objects.create_user(
             username='customer_user', email='c@coderr.de',
             password='testpass123', type='customer',
@@ -100,28 +100,28 @@ class OrderDestroyTests(APITestCase):
         self.url = reverse('order-detail', args=[self.order.pk])
 
     def test_staff_user_can_delete_order(self):
-        """Ein Staff-User kann eine Order löschen (204)."""
+        """A staff user can delete an order (204)."""
         self.client.force_authenticate(user=self.staff)
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Order.objects.count(), 0)
 
     def test_business_user_cannot_delete_order(self):
-        """Ein normaler Business-User kann keine Order löschen (403)."""
+        """A regular business user cannot delete an order (403)."""
         self.client.force_authenticate(user=self.business)
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Order.objects.count(), 1)
 
     def test_customer_cannot_delete_order(self):
-        """Ein Customer kann keine Order löschen (403)."""
+        """A customer cannot delete an order (403)."""
         self.client.force_authenticate(user=self.customer)
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Order.objects.count(), 1)
 
     def test_unauthenticated_user_cannot_delete_order(self):
-        """Ein nicht authentifizierter User kann keine Order löschen (401)."""
+        """An unauthenticated user cannot delete an order (401)."""
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Order.objects.count(), 1)

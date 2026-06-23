@@ -7,10 +7,10 @@ from offers_app.models import Offer, OfferDetail
 
 
 class OfferDetailRetrieveTests(APITestCase):
-    """Tests für den OfferDetail-Detail Endpoint (GET /api/offerdetails/{id}/)."""
+    """Tests for the offer detail endpoint (GET /api/offerdetails/{id}/)."""
 
     def setUp(self):
-        """Erstellt einen Business-User, einen Customer-User, ein Offer und ein OfferDetail."""
+        """Creates a business user, a customer user, an offer and an offer detail."""
         self.business_user = CustomUser.objects.create_user(
             username='business_user',
             email='biz@coderr.de',
@@ -40,7 +40,7 @@ class OfferDetailRetrieveTests(APITestCase):
         self.url = reverse('offerdetail-detail', args=[self.offer_detail.pk])
 
     def test_authenticated_user_can_retrieve_offerdetail(self):
-        """Ein authentifizierter User kann die Detail-Ansicht eines OfferDetails abrufen (200)."""
+        """An authenticated user can retrieve the detail view of an offer detail (200)."""
         self.client.force_authenticate(user=self.customer_user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -49,19 +49,19 @@ class OfferDetailRetrieveTests(APITestCase):
         self.assertEqual(response.data['offer_type'], 'basic')
 
     def test_unauthenticated_user_cannot_retrieve_offerdetail(self):
-        """Ein nicht authentifizierter User erhält 401 beim Abrufen eines OfferDetails."""
+        """An unauthenticated user receives 401 when retrieving an offer detail."""
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_nonexistent_offerdetail_returns_404(self):
-        """Eine Anfrage nach einem nicht existierenden OfferDetail gibt 404 zurück."""
+        """A request for a nonexistent offer detail returns 404."""
         self.client.force_authenticate(user=self.customer_user)
         nonexistent_url = reverse('offerdetail-detail', args=[9999])
         response = self.client.get(nonexistent_url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_response_contains_correct_fields(self):
-        """Die Response enthält genau die erwarteten Felder gemäß API-Dokumentation."""
+        """The response contains exactly the expected fields per the API documentation."""
         self.client.force_authenticate(user=self.customer_user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

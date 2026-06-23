@@ -6,10 +6,10 @@ from auth_app.models import CustomUser
 
 
 class ProfileDetailTests(APITestCase):
-    """Tests für den Profile-Detail Endpoint (GET/PATCH /api/profile/{pk}/)."""
+    """Tests for the profile detail endpoint (GET/PATCH /api/profile/{pk}/)."""
 
     def setUp(self):
-        """Erstellt einen Testbenutzer und authentifiziert ihn."""
+        """Creates a test user and authenticates them."""
         self.user = CustomUser.objects.create_user(
             username='testuser',
             email='test@coderr.de',
@@ -19,7 +19,7 @@ class ProfileDetailTests(APITestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_authenticated_user_can_get_profile(self):
-        """Ein authentifizierter Benutzer kann ein Profile abrufen."""
+        """An authenticated user can retrieve a profile."""
         url = reverse('profile-detail', kwargs={'pk': self.user.id})
 
         response = self.client.get(url)
@@ -33,10 +33,10 @@ class ProfileDetailTests(APITestCase):
                         'location', 'tel', 'description', 'working_hours']
         for field in empty_fields:
             self.assertEqual(response.data[field],
-                             "",  f"Feld {field} sollte leer sein")
+                             "",  f"Field {field} should be empty")
 
     def test_unauthenticated_user_cannot_get_profile(self):
-        """Ein nicht authentifizierter Benutzer erhält 401."""
+        """An unauthenticated user receives 401."""
         self.client.force_authenticate(user=None)
         url = reverse('profile-detail', kwargs={'pk': self.user.id})
 
@@ -45,7 +45,7 @@ class ProfileDetailTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_nonexistent_profile_returns_404(self):
-        """Ein nicht existierendes Profile gibt 404 zurück."""
+        """A nonexistent profile returns 404."""
         url = reverse('profile-detail', kwargs={'pk': 99999})
 
         response = self.client.get(url)
@@ -53,7 +53,7 @@ class ProfileDetailTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_owner_can_update_profile(self):
-        """Der Eigentümer kann sein Profile aktualisieren (200)."""
+        """The owner can update their profile (200)."""
         url = reverse('profile-detail', kwargs={'pk': self.user.id})
         data = {
             'first_name': 'Max',
@@ -76,7 +76,7 @@ class ProfileDetailTests(APITestCase):
         self.assertEqual(self.user.email, 'new@coderr.de')
 
     def test_unauthenticated_user_cannot_update_profile(self):
-        """Ein nicht authentifizierter Benutzer kann kein Profile aktualisieren (401)."""
+        """An unauthenticated user cannot update a profile (401)."""
         self.client.force_authenticate(user=None)
         url = reverse('profile-detail', kwargs={'pk': self.user.id})
         data = {'location': 'Berlin'}
@@ -86,7 +86,7 @@ class ProfileDetailTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_partial_update_preserves_empty_string_rule(self):
-        """Bei einer Teil-Aktualisierung bleiben nicht gesetzte Felder leere Strings."""
+        """In a partial update, fields that are not set remain empty strings."""
         url = reverse('profile-detail', kwargs={'pk': self.user.id})
         data = {'location': 'Berlin'}
         response = self.client.patch(url, data, format='json')
@@ -97,10 +97,10 @@ class ProfileDetailTests(APITestCase):
                         'tel', 'description', 'working_hours']
         for field in empty_fields:
             self.assertEqual(response.data[field],
-                             "", f"Feld {field} sollte leer sein")
+                             "", f"Field {field} should be empty")
 
     def test_non_owner_cannot_update_profile(self):
-        """Ein anderer User darf das Profile nicht aktualisieren (403)."""
+        """Another user cannot update the profile (403)."""
         other_user = CustomUser.objects.create_user(
             username='otheruser',
             email='other@coderr.de',
@@ -116,7 +116,7 @@ class ProfileDetailTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_nonexistent_profile_returns_404(self):
-        """Ein PATCH auf nicht existierendes Profile gibt 404 zurück."""
+        """A PATCH request for a nonexistent profile returns 404."""
         url = reverse('profile-detail', kwargs={'pk': 99999})
         data = {'location': 'Berlin'}
 
@@ -125,7 +125,7 @@ class ProfileDetailTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_profile_response_contains_all_expected_fields(self):
-        """Die GET-Antwort enthält alle erwarteten Felder."""
+        """The GET response contains all expected fields."""
         url = reverse('profile-detail', kwargs={'pk': self.user.id})
 
         response = self.client.get(url)

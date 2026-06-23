@@ -7,10 +7,10 @@ from orders_app.models import Order
 
 
 class OrderListTests(APITestCase):
-    """Tests für den Order-Listen-Endpoint (GET /api/orders/)."""
+    """Tests for the order list endpoint (GET /api/orders/)."""
 
     def setUp(self):
-        """Erstellt zwei Customer, zwei Business-User und mehrere Orders."""
+        """Creates two customers, two business users, and several orders."""
         self.customer_a = CustomUser.objects.create_user(
             username='customer_a', email='ca@coderr.de',
             password='testpass123', type='customer',
@@ -27,7 +27,7 @@ class OrderListTests(APITestCase):
             username='business_b', email='bb@coderr.de',
             password='testpass123', type='business',
         )
-        # customer_a → business_a (customer_a sees this)
+        # customer_a -> business_a (customer_a sees this)
         self.order_a = Order.objects.create(
             customer_user=self.customer_a,
             business_user=self.business_a,
@@ -35,7 +35,7 @@ class OrderListTests(APITestCase):
             revisions=3, delivery_time_in_days=5, price=150,
             features=['Logo'], offer_type='basic',
         )
-        # customer_b → business_b (customer_a should NOT see this)
+        # customer_b -> business_b (customer_a should NOT see this)
         self.order_b = Order.objects.create(
             customer_user=self.customer_b,
             business_user=self.business_b,
@@ -46,7 +46,7 @@ class OrderListTests(APITestCase):
         self.url = reverse('order-list')
 
     def test_authenticated_customer_sees_only_own_orders(self):
-        """Ein Customer sieht nur Orders, in denen er als customer_user steht (200)."""
+        """A customer only sees orders in which they are listed as customer_user (200)."""
         self.client.force_authenticate(user=self.customer_a)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -54,7 +54,7 @@ class OrderListTests(APITestCase):
         self.assertEqual(response.data[0]['id'], self.order_a.pk)
 
     def test_authenticated_business_sees_only_own_orders(self):
-        """Ein Business-User sieht nur Orders, in denen er als business_user steht (200)."""
+        """A business user only sees orders in which they are listed as business_user (200)."""
         self.client.force_authenticate(user=self.business_a)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -62,7 +62,7 @@ class OrderListTests(APITestCase):
         self.assertEqual(response.data[0]['id'], self.order_a.pk)
 
     def test_user_with_no_orders_gets_empty_list(self):
-        """Ein User ohne Orders erhält eine leere Liste (200)."""
+        """A user without any orders receives an empty list (200)."""
         unrelated_user = CustomUser.objects.create_user(
             username='unrelated', email='u@coderr.de',
             password='testpass123', type='customer',
@@ -73,6 +73,6 @@ class OrderListTests(APITestCase):
         self.assertEqual(response.data, [])
 
     def test_unauthenticated_user_cannot_list_orders(self):
-        """Ein nicht authentifizierter User erhält 401."""
+        """An unauthenticated user receives 401."""
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

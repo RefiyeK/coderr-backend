@@ -7,10 +7,10 @@ from offers_app.models import Offer, OfferDetail
 
 
 class OfferDetailRetrieveTests(APITestCase):
-    """Tests für den Offer-Detail Endpoint (GET /api/offers/{id}/)."""
+    """Tests for the offer detail endpoint (GET /api/offers/{id}/)."""
 
     def setUp(self):
-        """Erstellt einen Business-User, einen Customer-User und ein Offer mit drei Details."""
+        """Creates a business user, a customer user, and an offer with three details."""
         self.business_user = CustomUser.objects.create_user(
             username='business_user',
             email='biz@coderr.de',
@@ -58,7 +58,7 @@ class OfferDetailRetrieveTests(APITestCase):
         self.url = reverse('offer-detail', args=[self.offer.pk])
 
     def test_authenticated_user_can_retrieve_offer(self):
-        """Ein authentifizierter User kann die Detail-Ansicht eines Offers abrufen (200)."""
+        """An authenticated user can retrieve the detail view of an offer (200)."""
         self.client.force_authenticate(user=self.customer_user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -66,24 +66,24 @@ class OfferDetailRetrieveTests(APITestCase):
         self.assertEqual(response.data['title'], 'Grafikdesign-Paket')
 
     def test_unauthenticated_user_cannot_retrieve_offer(self):
-        """Ein nicht authentifizierter User erhält 401 beim Abrufen eines Offers."""
+        """An unauthenticated user receives 401 when retrieving an offer."""
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_nonexistent_offer_returns_404(self):
-        """Eine Anfrage nach einem nicht existierenden Offer gibt 404 zurück."""
+        """A request for a nonexistent offer returns 404."""
         self.client.force_authenticate(user=self.customer_user)
         nonexistent_url = reverse('offer-detail', args=[9999])
         response = self.client.get(nonexistent_url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_response_excludes_user_details_field(self):
-        """Die Detail-Response enthält kein user_details-Feld (im Unterschied zur Liste)."""
+        """The detail response does not contain a user_details field (unlike the list view)."""
         self.client.force_authenticate(user=self.customer_user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn('user_details', response.data)
-        # Stelle gleichzeitig sicher, dass die erwarteten Felder vorhanden sind
+        # Also ensure the expected fields are present
         expected_fields = {
             'id', 'user', 'title', 'image', 'description',
             'created_at', 'updated_at', 'details',
@@ -93,10 +93,10 @@ class OfferDetailRetrieveTests(APITestCase):
 
 
 class OfferDetailDestroyTests(APITestCase):
-    """Tests für die Löschung eines Offers (DELETE /api/offers/{id}/)."""
+    """Tests for deleting an offer (DELETE /api/offers/{id}/)."""
 
     def setUp(self):
-        """Erstellt zwei Business-User, einen Customer-User und ein Offer mit drei Details."""
+        """Creates two business users, a customer user, and an offer with three details."""
         self.owner = CustomUser.objects.create_user(
             username='offer_owner',
             email='owner@coderr.de',
@@ -150,7 +150,7 @@ class OfferDetailDestroyTests(APITestCase):
         self.url = reverse('offer-detail', args=[self.offer.pk])
 
     def test_owner_can_delete_offer(self):
-        """Der Eigentümer eines Offers kann es löschen (204)."""
+        """The owner of an offer can delete it (204)."""
         self.client.force_authenticate(user=self.owner)
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -158,27 +158,27 @@ class OfferDetailDestroyTests(APITestCase):
         self.assertEqual(OfferDetail.objects.count(), 0)
 
     def test_non_owner_business_user_cannot_delete_offer(self):
-        """Ein anderer Business-User kann ein fremdes Offer nicht löschen (403)."""
+        """Another business user cannot delete someone else's offer (403)."""
         self.client.force_authenticate(user=self.other_business)
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Offer.objects.count(), 1)
 
     def test_customer_user_cannot_delete_offer(self):
-        """Ein Customer-User kann ein Offer nicht löschen (403)."""
+        """A customer user cannot delete an offer (403)."""
         self.client.force_authenticate(user=self.customer_user)
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Offer.objects.count(), 1)
 
     def test_unauthenticated_user_cannot_delete_offer(self):
-        """Ein nicht authentifizierter User kann kein Offer löschen (401)."""
+        """An unauthenticated user cannot delete an offer (401)."""
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Offer.objects.count(), 1)
 
     def test_delete_nonexistent_offer_returns_404(self):
-        """Eine DELETE-Anfrage an ein nicht existierendes Offer gibt 404 zurück."""
+        """A DELETE request for a nonexistent offer returns 404."""
         self.client.force_authenticate(user=self.owner)
         nonexistent_url = reverse('offer-detail', args=[9999])
         response = self.client.delete(nonexistent_url)
@@ -187,10 +187,10 @@ class OfferDetailDestroyTests(APITestCase):
 
 
 class OfferDetailUpdateTests(APITestCase):
-    """Tests für die Aktualisierung eines Offers (PATCH /api/offers/{id}/)."""
+    """Tests for updating an offer (PATCH /api/offers/{id}/)."""
 
     def setUp(self):
-        """Erstellt zwei Business-User, einen Customer-User und ein Offer mit drei Details."""
+        """Creates two business users, a customer user, and an offer with three details."""
         self.owner = CustomUser.objects.create_user(
             username='offer_owner',
             email='owner@coderr.de',
@@ -244,20 +244,20 @@ class OfferDetailUpdateTests(APITestCase):
         self.url = reverse('offer-detail', args=[self.offer.pk])
 
     def test_owner_can_update_offer_title_only(self):
-        """Der Eigentümer kann nur den Titel aktualisieren, ohne Details mitzusenden (200)."""
+        """The owner can update only the title without sending any details (200)."""
         self.client.force_authenticate(user=self.owner)
         payload = {'title': 'Updated Grafikdesign-Paket'}
         response = self.client.patch(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['title'], 'Updated Grafikdesign-Paket')
-        # Details bleiben unverändert
+        # Details remain unchanged
         self.offer.refresh_from_db()
         self.assertEqual(self.offer.details.count(), 3)
         self.basic_detail.refresh_from_db()
         self.assertEqual(self.basic_detail.price, 100)
 
     def test_owner_can_update_single_detail_by_offer_type(self):
-        """Der Eigentümer kann ein einzelnes Detail aktualisieren, andere bleiben unverändert (200)."""
+        """The owner can update a single detail; the others remain unchanged (200)."""
         self.client.force_authenticate(user=self.owner)
         payload = {
             'details': [
@@ -266,20 +266,20 @@ class OfferDetailUpdateTests(APITestCase):
         }
         response = self.client.patch(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Basic-Detail wurde aktualisiert, ID bleibt gleich
+        # Basic detail was updated, ID stays the same
         self.basic_detail.refresh_from_db()
         self.assertEqual(self.basic_detail.price, 999)
-        self.assertEqual(self.basic_detail.revisions, 2)  # unverändert
-        # Standard- und Premium-Detail bleiben unverändert
+        self.assertEqual(self.basic_detail.revisions, 2)  # unchanged
+        # Standard and premium details remain unchanged
         self.standard_detail.refresh_from_db()
         self.premium_detail.refresh_from_db()
         self.assertEqual(self.standard_detail.price, 200)
         self.assertEqual(self.premium_detail.price, 500)
-        # Es existieren weiterhin genau 3 Details
+        # Exactly 3 details still exist
         self.assertEqual(self.offer.details.count(), 3)
 
     def test_unauthenticated_user_cannot_update_offer(self):
-        """Ein nicht authentifizierter User kann kein Offer aktualisieren (401)."""
+        """An unauthenticated user cannot update an offer (401)."""
         payload = {'title': 'Hacked Title'}
         response = self.client.patch(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -287,7 +287,7 @@ class OfferDetailUpdateTests(APITestCase):
         self.assertEqual(self.offer.title, 'Grafikdesign-Paket')
 
     def test_non_owner_business_user_cannot_update_offer(self):
-        """Ein anderer Business-User kann ein fremdes Offer nicht aktualisieren (403)."""
+        """Another business user cannot update someone else's offer (403)."""
         self.client.force_authenticate(user=self.other_business)
         payload = {'title': 'Hacked Title'}
         response = self.client.patch(self.url, payload, format='json')
@@ -296,7 +296,7 @@ class OfferDetailUpdateTests(APITestCase):
         self.assertEqual(self.offer.title, 'Grafikdesign-Paket')
 
     def test_update_with_too_many_details_returns_400(self):
-        """Mehr als 3 Details im PATCH werden mit 400 abgelehnt."""
+        """More than 3 details in a PATCH request are rejected with 400."""
         self.client.force_authenticate(user=self.owner)
         payload = {
             'details': [
@@ -310,7 +310,7 @@ class OfferDetailUpdateTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_with_duplicate_offer_type_returns_400(self):
-        """Doppelter offer_type im PATCH wird mit 400 abgelehnt."""
+        """A duplicate offer_type in a PATCH request is rejected with 400."""
         self.client.force_authenticate(user=self.owner)
         payload = {
             'details': [

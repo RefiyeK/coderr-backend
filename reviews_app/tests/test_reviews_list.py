@@ -7,10 +7,10 @@ from reviews_app.models import Review
 
 
 class ReviewListTests(APITestCase):
-    """Tests für den Review-Listen-Endpoint (GET /api/reviews/)."""
+    """Tests for the review list endpoint (GET /api/reviews/)."""
 
     def setUp(self):
-        """Erstellt User und zwei Reviews für zwei verschiedene Business-User."""
+        """Creates a user and two reviews for two different business users."""
         self.customer = CustomUser.objects.create_user(
             username='customer_user', email='c@coderr.de',
             password='testpass123', type='customer',
@@ -38,19 +38,19 @@ class ReviewListTests(APITestCase):
         self.url = reverse('review-list')
 
     def test_authenticated_user_can_list_reviews(self):
-        """Ein authentifizierter User kann die Review-Liste abrufen (200)."""
+        """An authenticated user can retrieve the review list (200)."""
         self.client.force_authenticate(user=self.customer)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
 
     def test_unauthenticated_user_cannot_list_reviews(self):
-        """Ein nicht authentifizierter User erhält 401."""
+        """An unauthenticated user receives 401."""
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_list_can_be_filtered_by_business_user_id(self):
-        """Filter business_user_id liefert nur Reviews dieses Business-Users."""
+        """The business_user_id filter returns only reviews for that business user."""
         self.client.force_authenticate(user=self.customer)
         response = self.client.get(self.url, {'business_user_id': self.business_a.pk})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
