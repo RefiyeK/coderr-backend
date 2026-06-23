@@ -105,6 +105,8 @@ You can generate a Django secret key with:
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
+**Note on `DEBUG`:** The `.env.template` ships with `DEBUG=False` as a safe production default. For local development, set `DEBUG=True` in your `.env` so error tracebacks are shown and the Django admin panel is styled correctly. Never deploy a production server with `DEBUG=True`.
+
 ### 5. Run migrations
 
 ```bash
