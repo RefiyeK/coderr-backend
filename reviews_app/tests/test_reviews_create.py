@@ -60,7 +60,8 @@ class ReviewCreateTests(APITestCase):
         self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
         payload['description'] = 'Zweite Bewertung'
         second_response = self.client.post(self.url, payload, format='json')
-        self.assertEqual(second_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(second_response.status_code,
+                         status.HTTP_403_FORBIDDEN)
         self.assertEqual(Review.objects.count(), 1)
 
     def test_unauthenticated_user_cannot_create_review(self):
@@ -101,3 +102,39 @@ class ReviewCreateTests(APITestCase):
         response = self.client.post(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['reviewer'], self.customer.pk)
+
+    def test_create_review_without_description_returns_400(self):
+        """A review without description is rejected with 400 (field-level validation runs first)."""
+        self.client.force_authenticate(user=self.customer)
+        payload = {
+            'business_user': self.business.pk,
+            'rating': 4,
+            # description missing on purpose
+        }
+        response = self.client.post(self.url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Review.objects.count(), 0)
+
+    def test_duplicate_review_with_missing_description_returns_400(self):
+        """When a request is invalid (missing description), 400 takes priority over the 403 duplicate check."""
+        # First, create a valid review
+        self.client.force_authenticate(user=self.customer)
+        valid_payload = {
+            'business_user': self.business.pk,
+            'rating': 4,
+            'description': 'First review',
+        }
+        first_response = self.client.post(
+            self.url, valid_payload, format='json')
+        self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
+
+        # Now try a second one without description -- must be 400, not 403
+        invalid_payload = {
+            'business_user': self.business.pk,
+            'rating': 5,
+            # description missing
+        }
+        second_response = self.client.post(
+            self.url, invalid_payload, format='json')
+        self.assertEqual(second_response.status_code,
+                         status.HTTP_400_BAD_REQUEST)

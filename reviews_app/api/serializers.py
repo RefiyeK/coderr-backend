@@ -7,6 +7,8 @@ from reviews_app.models import Review
 class ReviewSerializer(serializers.ModelSerializer):
     """Serializes Review objects."""
 
+    description = serializers.CharField(required=True, allow_blank=False)
+
     class Meta:
         model = Review
         fields = [
@@ -16,7 +18,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ['reviewer']
 
     def validate(self, attrs):
-        """Prevents the same reviewer from creating multiple reviews for the same business user (returns 403)."""
+        """Prevents the same reviewer from creating multiple reviews for the same business user (403)."""
         request = self.context.get('request')
         if request and request.method == 'POST':
             business_user = attrs.get('business_user')
