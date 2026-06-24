@@ -137,7 +137,7 @@ Tests use a separate settings file with an in-memory SQLite database for speed:
 python manage.py test --settings=core.test_settings
 ```
 
-To measure code coverage (install `coverage` first with `pip install coverage`):
+To measure code coverage:
 
 ```bash
 coverage run --source='.' manage.py test --settings=core.test_settings
