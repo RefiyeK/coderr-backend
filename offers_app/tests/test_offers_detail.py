@@ -321,3 +321,14 @@ class OfferDetailUpdateTests(APITestCase):
         }
         response = self.client.patch(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_detail_without_offer_type_returns_400(self):
+        """Updating a detail without offer_type returns 400 (not 500)."""
+        self.client.force_authenticate(user=self.owner)
+        payload = {
+            'details': [
+                {'price': 999}
+            ]
+        }
+        response = self.client.patch(self.url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
