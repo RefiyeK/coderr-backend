@@ -104,12 +104,18 @@ class OfferUpdateSerializer(OfferCreateSerializer):
     """Serializes Offers for updates (PATCH); allows 1-3 details with unique offer_types."""
 
     def validate_details(self, value):
-        """For PATCH, allows 1 to 3 details, with each offer_type appearing only once."""
+        """In PATCH, 1 to 3 details may be provided; each must include offer_type, and each offer_type can appear only once."""
         if len(value) < 1 or len(value) > 3:
             raise serializers.ValidationError(
                 "Between 1 and 3 details must be provided.")
 
-        types = [d['offer_type'] for d in value]
+        types = []
+        for detail in value:
+            if 'offer_type' not in detail:
+                raise serializers.ValidationError(
+                    "Each detail must include 'offer_type' to identify which package to update.")
+            types.append(detail['offer_type'])
+
         if len(types) != len(set(types)):
             raise serializers.ValidationError(
                 "Each offer_type may appear only once.")
